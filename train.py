@@ -8,7 +8,8 @@ import sys
 import random
 import time
 import json
-import dmc2gym
+# import dmc2gym
+from MVRL.envs import dmc2gym
 import copy
 
 import utils
@@ -113,7 +114,7 @@ def evaluate(env, agent, video, num_episodes, L, step, args):
             video.save('%d.mp4' % step)
             L.log('eval/' + prefix + 'episode_reward', episode_reward, step)
             all_ep_rewards.append(episode_reward)
-        
+
         L.log('eval/' + prefix + 'eval_time', time.time()-start_time , step)
         mean_ep_reward = np.mean(all_ep_rewards)
         best_ep_reward = np.max(all_ep_rewards)
@@ -128,15 +129,15 @@ def evaluate(env, agent, video, num_episodes, L, step, args):
             log_data = log_data.item()
         except:
             log_data = {}
-            
+
         if key not in log_data:
             log_data[key] = {}
 
         log_data[key][step] = {}
-        log_data[key][step]['step'] = step 
-        log_data[key][step]['mean_ep_reward'] = mean_ep_reward 
-        log_data[key][step]['max_ep_reward'] = best_ep_reward 
-        log_data[key][step]['std_ep_reward'] = std_ep_reward 
+        log_data[key][step]['step'] = step
+        log_data[key][step]['mean_ep_reward'] = mean_ep_reward
+        log_data[key][step]['max_ep_reward'] = best_ep_reward
+        log_data[key][step]['std_ep_reward'] = std_ep_reward
         log_data[key][step]['env_step'] = step * args.action_repeat
 
         np.save(filename,log_data)
@@ -182,16 +183,24 @@ def make_agent(obs_shape, action_shape, args, device):
 
 def main():
     args = parse_args()
-    if args.seed == -1: 
+    if args.seed == -1:
         args.__dict__["seed"] = np.random.randint(1,1000000)
     utils.set_seed_everywhere(args.seed)
 
     pre_transform_image_size = args.pre_transform_image_size if 'crop' in args.data_augs else args.image_size
     pre_image_size = args.pre_transform_image_size # record the pre transform image size for translation
 
+    resource_files = '/home/jiameng/packages/AdvGen/Invariant_RL/distractors/*.mp4'
+    eval_resource_files = '/home/jiameng/packages/AdvGen/kinetics-downloader/dataset/test/*.mp4'
+    img_source = 'video'
+    total_frames=1000
+
     env = dmc2gym.make(
         domain_name=args.domain_name,
         task_name=args.task_name,
+        resource_files=resource_files,
+        img_source=img_source,
+        total_frames=total_frames,
         seed=args.seed,
         visualize_reward=False,
         from_pixels=(args.encoder_type == 'pixel'),
@@ -199,16 +208,29 @@ def main():
         width=pre_transform_image_size,
         frame_skip=args.action_repeat
     )
- 
+    eval_env = dmc2gym.make(
+        domain_name=args.domain_name,
+        task_name=args.task_name,
+        resource_files=eval_resource_files,
+        img_source=img_source,
+        total_frames=total_frames,
+        seed=args.seed,
+        visualize_reward=False,
+        from_pixels=(args.encoder_type == 'pixel'),
+        height=pre_transform_image_size,
+        width=pre_transform_image_size,
+        frame_skip=args.action_repeat
+    )
+
     env.seed(args.seed)
 
     # stack several consecutive frames together
     if args.encoder_type == 'pixel':
         env = utils.FrameStack(env, k=args.frame_stack)
-    
+
     # make directory
-    ts = time.gmtime() 
-    ts = time.strftime("%m-%d", ts)    
+    ts = time.gmtime()
+    ts = time.strftime("%m-%d", ts)
     env_name = args.domain_name + '-' + args.task_name
     exp_name = env_name + '-' + ts + '-im' + str(args.image_size) +'-b'  \
     + str(args.batch_size) + '-s' + str(args.seed)  + '-' + args.encoder_type
@@ -263,7 +285,7 @@ def main():
 
         if step % args.eval_freq == 0:
             L.log('eval/episode', episode, step)
-            evaluate(env, agent, video, args.num_eval_episodes, L, step,args)
+            evaluate(eval_env, agent, video, args.num_eval_episodes, L, step,args)
             if args.save_model:
                 agent.save_curl(model_dir, step)
             if args.save_buffer:
@@ -295,7 +317,7 @@ def main():
 
         # run training update
         if step >= args.init_steps:
-            num_updates = 1 
+            num_updates = 1
             for _ in range(num_updates):
                 agent.update(replay_buffer, L, step)
 
