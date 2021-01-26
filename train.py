@@ -193,7 +193,7 @@ def main():
     img_source = 'video'
     total_frames=1000
     if args.noisy_bg:
-        from MVRL.envs import dmc2gym
+        from noisy_bg.envs import dmc2gym
         env = dmc2gym.make(
             domain_name=args.domain_name,
             task_name=args.task_name,
@@ -248,6 +248,7 @@ def main():
     # stack several consecutive frames together
     if args.encoder_type == 'pixel':
         env = utils.FrameStack(env, k=args.frame_stack)
+        eval_env = utils.FrameStack(eval_env, k=args.frame_stack)
 
     # make directory
     ts = time.gmtime()
