@@ -2,22 +2,16 @@ import numpy as np
 import torch
 import argparse
 import os
-import math
-import gym
-import sys
-import random
 import time
 import json
 
-import copy
 
 import utils
 from logger import Logger
 from video import VideoRecorder
 
 from curl_sac import RadSacAgent
-from torchvision import transforms
-import data_augs as rad
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -122,7 +116,11 @@ def evaluate(env, agent, video, num_episodes, L, step, args):
         L.log('eval/' + prefix + 'mean_episode_reward', mean_ep_reward, step)
         L.log('eval/' + prefix + 'best_episode_reward', best_ep_reward, step)
 
-        filename = args.work_dir + '/' + args.domain_name + '--'+args.task_name + '-' + args.data_augs + '--s' + str(args.seed) + '--eval_scores.npy'
+        if args.noisy_bg:
+            noisy_name = 'noisy-bg'
+        else:
+            noisy_name = 'clean'
+        filename = args.work_dir + '/' + args.domain_name + '--'+args.task_name + '-' + args.data_augs + '-' + noisy_name + '--s' + str(args.seed) + '--eval_scores.npy'
         key = args.domain_name + '-' + args.task_name + '-' + args.data_augs
         try:
             log_data = np.load(filename,allow_pickle=True)
@@ -190,8 +188,8 @@ def main():
     pre_transform_image_size = args.pre_transform_image_size if 'crop' in args.data_augs else args.image_size
     pre_image_size = args.pre_transform_image_size # record the pre transform image size for translation
 
-    resource_files = '/home/jiameng/packages/AdvGen/Invariant_RL/distractors/*.mp4'
-    eval_resource_files = '/home/jiameng/packages/AdvGen/kinetics-downloader/dataset/test/*.mp4'
+    resource_files = '~/packages/AdvGen/Invariant_RL/distractors/*.mp4'
+    eval_resource_files = '~/packages/AdvGen/kinetics-downloader/dataset/test/*.mp4'
     img_source = 'video'
     total_frames=1000
     if args.noisy_bg:
