@@ -207,6 +207,7 @@ def main():
             width=pre_transform_image_size,
             frame_skip=args.action_repeat,
             frame_stack=args.frame_stack,
+            extra='train',
         )
         eval_env = dmc2gym.make(
             domain_name=args.domain_name,
@@ -221,6 +222,7 @@ def main():
             width=pre_transform_image_size,
             frame_skip=args.action_repeat,
             frame_stack=args.frame_stack,
+            extra='eval',
         )
     else:
         import dmc2gym

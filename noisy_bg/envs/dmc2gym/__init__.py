@@ -17,9 +17,10 @@ def make(
     frame_skip=1,
     episode_length=1000,
     frame_stack=1,
-    environment_kwargs=None
+    environment_kwargs=None,
+    extra='train',
 ):
-    env_id = 'dmc_%s_%s_%s-v1' % (domain_name, task_name, seed)
+    env_id = 'dmc_%s_%s_%s_%s_-v1' % (domain_name, task_name, extra, seed)
 
     if from_pixels:
         assert not visualize_reward,\
