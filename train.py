@@ -246,6 +246,7 @@ def main():
         )
 
     env.seed(args.seed)
+    eval_env.seed(args.seed)
 
     # stack several consecutive frames together
     if args.encoder_type == 'pixel' and not args.noisy_bg:
