@@ -30,7 +30,7 @@ class VideoRecorder(object):
         #             mode='rgb_array',
         #         )
 
-        self.frames.append(np.transpose(frame[-1].cpu().numpy(), (1, 2, 0)))
+        self.frames.append(np.transpose(frame[-1], (1, 2, 0)))
 
     def save(self, file_name):
         if self.enabled:
