@@ -8,8 +8,7 @@ import sys
 import random
 import time
 import json
-# import dmc2gym
-from MVRL.envs import dmc2gym
+
 import copy
 
 import utils
@@ -75,7 +74,8 @@ def parse_args():
     parser.add_argument('--detach_encoder', default=False, action='store_true')
     # data augs
     parser.add_argument('--data_augs', default='crop', type=str)
-
+    # noisy bg
+    parser.add_argument('--noisy_bg', default=False, action='store_true')
 
     parser.add_argument('--log_interval', default=100, type=int)
     args = parser.parse_args()
@@ -194,33 +194,56 @@ def main():
     eval_resource_files = '/home/jiameng/packages/AdvGen/kinetics-downloader/dataset/test/*.mp4'
     img_source = 'video'
     total_frames=1000
-
-    env = dmc2gym.make(
-        domain_name=args.domain_name,
-        task_name=args.task_name,
-        resource_files=resource_files,
-        img_source=img_source,
-        total_frames=total_frames,
-        seed=args.seed,
-        visualize_reward=False,
-        from_pixels=(args.encoder_type == 'pixel'),
-        height=pre_transform_image_size,
-        width=pre_transform_image_size,
-        frame_skip=args.action_repeat
-    )
-    eval_env = dmc2gym.make(
-        domain_name=args.domain_name,
-        task_name=args.task_name,
-        resource_files=eval_resource_files,
-        img_source=img_source,
-        total_frames=total_frames,
-        seed=args.seed,
-        visualize_reward=False,
-        from_pixels=(args.encoder_type == 'pixel'),
-        height=pre_transform_image_size,
-        width=pre_transform_image_size,
-        frame_skip=args.action_repeat
-    )
+    if args.noisy_bg:
+        from MVRL.envs import dmc2gym
+        env = dmc2gym.make(
+            domain_name=args.domain_name,
+            task_name=args.task_name,
+            resource_files=resource_files,
+            img_source=img_source,
+            total_frames=total_frames,
+            seed=args.seed,
+            visualize_reward=False,
+            from_pixels=(args.encoder_type == 'pixel'),
+            height=pre_transform_image_size,
+            width=pre_transform_image_size,
+            frame_skip=args.action_repeat
+        )
+        eval_env = dmc2gym.make(
+            domain_name=args.domain_name,
+            task_name=args.task_name,
+            resource_files=eval_resource_files,
+            img_source=img_source,
+            total_frames=total_frames,
+            seed=args.seed,
+            visualize_reward=False,
+            from_pixels=(args.encoder_type == 'pixel'),
+            height=pre_transform_image_size,
+            width=pre_transform_image_size,
+            frame_skip=args.action_repeat
+        )
+    else:
+        import dmc2gym
+        env = dmc2gym.make(
+            domain_name=args.domain_name,
+            task_name=args.task_name,
+            seed=args.seed,
+            visualize_reward=False,
+            from_pixels=(args.encoder_type == 'pixel'),
+            height=pre_transform_image_size,
+            width=pre_transform_image_size,
+            frame_skip=args.action_repeat
+        )
+        eval_env = dmc2gym.make(
+            domain_name=args.domain_name,
+            task_name=args.task_name,
+            seed=args.seed,
+            visualize_reward=False,
+            from_pixels=(args.encoder_type == 'pixel'),
+            height=pre_transform_image_size,
+            width=pre_transform_image_size,
+            frame_skip=args.action_repeat
+        )
 
     env.seed(args.seed)
 
