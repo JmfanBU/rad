@@ -102,7 +102,7 @@ def evaluate(env, agent, video, num_episodes, L, step, args):
                     else:
                         action = agent.select_action(obs / 255.)
                 obs, reward, done, _ = env.step(action)
-                video.record(env)
+                video.record(obs)
                 episode_reward += reward
 
             video.save('%d.mp4' % step)

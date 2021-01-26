@@ -16,21 +16,21 @@ class VideoRecorder(object):
         self.frames = []
         self.enabled = self.dir_name is not None and enabled
 
-    def record(self, env):
-        if self.enabled:
-            try:
-                frame = env.render(
-                    mode='rgb_array',
-                    height=self.height,
-                    width=self.width,
-                    camera_id=self.camera_id
-                )
-            except:
-                frame = env.render(
-                    mode='rgb_array',
-                )
-    
-            self.frames.append(frame)
+    def record(self, frame):
+        # if self.enabled:
+        #     try:
+        #         frame = env.render(
+        #             mode='rgb_array',
+        #             height=self.height,
+        #             width=self.width,
+        #             camera_id=self.camera_id
+        #         )
+        #     except:
+        #         frame = env.render(
+        #             mode='rgb_array',
+        #         )
+
+        self.frames.append(np.transpose(frame[-1].cpu().numpy(), (1, 2, 0)))
 
     def save(self, file_name):
         if self.enabled:
