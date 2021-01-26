@@ -205,7 +205,8 @@ def main():
             from_pixels=(args.encoder_type == 'pixel'),
             height=pre_transform_image_size,
             width=pre_transform_image_size,
-            frame_skip=args.action_repeat
+            frame_skip=args.action_repeat,
+            frame_stack=args.frame_stack,
         )
         eval_env = dmc2gym.make(
             domain_name=args.domain_name,
@@ -218,7 +219,8 @@ def main():
             from_pixels=(args.encoder_type == 'pixel'),
             height=pre_transform_image_size,
             width=pre_transform_image_size,
-            frame_skip=args.action_repeat
+            frame_skip=args.action_repeat,
+            frame_stack=args.frame_stack,
         )
     else:
         import dmc2gym
@@ -246,7 +248,7 @@ def main():
     env.seed(args.seed)
 
     # stack several consecutive frames together
-    if args.encoder_type == 'pixel':
+    if args.encoder_type == 'pixel' and not args.noisy_bg:
         env = utils.FrameStack(env, k=args.frame_stack)
         eval_env = utils.FrameStack(eval_env, k=args.frame_stack)
 
